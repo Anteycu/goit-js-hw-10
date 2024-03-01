@@ -1,22 +1,47 @@
+import { Notify } from 'notiflix';
+import SlimSelect from 'slim-select';
 import { fetchBreeds, fetchCatByBreed } from './cat-api';
 
 const selectRef = document.querySelector('.breed-select');
 const outputRef = document.querySelector('.cat-info');
+const loaderRef = document.querySelector('.loader');
 
-fetchBreeds().then(catArr =>
-  catArr.map(({ id, name }) => {
-    const option = document.createElement('option');
-    option.value = id;
-    option.text = name;
-    selectRef.add(option);
+const select = new SlimSelect({
+  select: selectRef,
+  events: {
+    afterChange: updVal => changeHandler(...updVal),
+  },
+});
+
+fetchBreeds()
+  .then(catArr => {
+    const selectData = [
+      { placeholder: true, text: 'Choose the breed', value: '' },
+    ];
+    catArr.map(({ id, name }) => {
+      selectData.push({ text: name, value: id });
+    });
+    select.setData(selectData);
+    loaderRef.style.display = 'none';
+    selectRef.classList.remove('is-hidden');
   })
-);
+  .catch(err => Notify.failure(err.message));
 
-selectRef.addEventListener('change', onChange);
+function changeHandler(optionObj) {
+  const { value } = optionObj;
+  if (!value) {
+    return;
+  }
+  outputRef.innerHTML = '';
+  loaderRef.style.display = 'block';
 
-function onChange(e) {
-  const { value } = e.target;
-  fetchCatByBreed(value).then(cat => createMarkup(...cat));
+  fetchCatByBreed(value)
+    .then(cat => {
+      const result = createMarkup(...cat);
+      loaderRef.style.display = 'none';
+      return result;
+    })
+    .catch(err => Notify.failure(err.message));
 }
 
 function createMarkup(catObj) {
