@@ -22,10 +22,13 @@ fetchBreeds()
       selectData.push({ text: name, value: id });
     });
     select.setData(selectData);
-    loaderRef.style.display = 'none';
-    selectRef.classList.remove('is-hidden');
+    loaderRef.classList.add(['visually-hidden']);
+    selectRef.classList.remove('visually-hidden');
   })
-  .catch(err => Notify.failure(err.message));
+  .catch(err => {
+    Notify.failure(err.message);
+    loaderRef.classList.add(['visually-hidden']);
+  });
 
 function changeHandler(optionObj) {
   const { value } = optionObj;
@@ -33,15 +36,17 @@ function changeHandler(optionObj) {
     return;
   }
   outputRef.innerHTML = '';
-  loaderRef.style.display = 'block';
+  loaderRef.classList.remove('visually-hidden');
 
   fetchCatByBreed(value)
     .then(cat => {
-      const result = createMarkup(...cat);
-      loaderRef.style.display = 'none';
-      return result;
+      createMarkup(...cat);
+      loaderRef.classList.add(['visually-hidden']);
     })
-    .catch(err => Notify.failure(err.message));
+    .catch(err => {
+      Notify.failure(err.message);
+      loaderRef.classList.add(['visually-hidden']);
+    });
 }
 
 function createMarkup(catObj) {
@@ -49,11 +54,13 @@ function createMarkup(catObj) {
   const { description, origin, temperament, name } = breeds[0];
 
   const markup = `
-      <img src="${url}" alt="Cat of ${name} breed" width="500" height="400"/>
+      <div class="cat-info-thumb">
+      <img src="${url}" alt="Cat of ${name} breed" width="800" height="550" class="cat-info-img"/>
+      </div>
       <h1>${name}</h1>
-      <p>${origin}</p>
-      <p>${description}</p>
-      <p>${temperament}</p>`;
+      <h2>(${origin})</h2>
+      <p>${temperament}</p>
+      <p class="cat-info-descr">${description}</p>`;
 
   outputRef.innerHTML = markup;
 }

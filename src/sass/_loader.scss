@@ -1,17 +1,21 @@
 .loader {
+  display: flex;
+  justify-content: center;
+  // align-items: stretch;
+  padding-top: 80px;
   color: #000;
   font-family: Consolas, Menlo, Monaco, monospace;
   font-weight: bold;
-  font-size: 78px;
+  font-size: 88px;
   opacity: 0.8;
 }
 .loader:before {
-  content: '{';
+  content: '{_';
   display: inline-block;
   animation: pulse 0.4s alternate infinite ease-in-out;
 }
 .loader:after {
-  content: '}';
+  content: '_}';
   display: inline-block;
   animation: pulse 0.4s 0.3s alternate infinite ease-in-out;
 }
