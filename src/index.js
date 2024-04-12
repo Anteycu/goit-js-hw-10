@@ -1,10 +1,12 @@
 import { Notify } from 'notiflix';
 import SlimSelect from 'slim-select';
-import { fetchBreeds, fetchCatByBreed } from './cat-api';
+import { fetchBreeds, fetchCatByBreed } from './js/cat-api';
+import createMarkup from './js/markup-creator';
+import { showElem, hideElem, outputMarkup, clearMarkup } from './js/utils';
 
 const selectRef = document.querySelector('.breed-select');
-const outputRef = document.querySelector('.cat-info');
 const loaderRef = document.querySelector('.loader');
+const outputRef = document.querySelector('.cat-info');
 
 const select = new SlimSelect({
   select: selectRef,
@@ -21,13 +23,15 @@ fetchBreeds()
     catArr.map(({ id, name }) => {
       selectData.push({ text: name, value: id });
     });
+
     select.setData(selectData);
-    loaderRef.classList.add(['visually-hidden']);
-    selectRef.classList.remove('visually-hidden');
+
+    hideElem(loaderRef);
+    showElem(selectRef);
   })
   .catch(err => {
     Notify.failure(err.message);
-    loaderRef.classList.add(['visually-hidden']);
+    hideElem(loaderRef);
   });
 
 function changeHandler(optionObj) {
@@ -35,32 +39,16 @@ function changeHandler(optionObj) {
   if (!value) {
     return;
   }
-  outputRef.innerHTML = '';
-  loaderRef.classList.remove('visually-hidden');
+  clearMarkup(outputRef);
+  showElem(loaderRef);
 
   fetchCatByBreed(value)
     .then(cat => {
-      createMarkup(...cat);
-      loaderRef.classList.add(['visually-hidden']);
+      outputMarkup(outputRef, createMarkup(...cat));
+      hideElem(loaderRef);
     })
     .catch(err => {
       Notify.failure(err.message);
-      loaderRef.classList.add(['visually-hidden']);
+      hideElem(loaderRef);
     });
-}
-
-function createMarkup(catObj) {
-  const { url, breeds } = catObj;
-  const { description, origin, temperament, name } = breeds[0];
-
-  const markup = `
-      <div class="cat-info-thumb">
-      <img src="${url}" alt="Cat of ${name} breed" width="800" height="550" class="cat-info-img"/>
-      </div>
-      <h1>${name}</h1>
-      <h2>(${origin})</h2>
-      <p>${temperament}</p>
-      <p class="cat-info-descr">${description}</p>`;
-
-  outputRef.innerHTML = markup;
 }
